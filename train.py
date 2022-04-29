@@ -63,6 +63,7 @@ def run(config):
         record['train_loss'].append(train_loss)
         record['valid_loss'].append(valid_loss)
         record['lr'].append(optimizer.param_groups[0]['lr'])
+        #`record['rewards'].append() #record reward logs
 
 
         #save best model

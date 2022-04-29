@@ -45,29 +45,27 @@ def generate_samples(model, tokenizer, split, device):
         src = torch.tensor(seq, dtype=torch.long).unsqueeze(0)
         src_mask = create_src_mask(src)
 
-        src = model.embedding(src.to(device))
-
-        with torch.no_grad():
-            enc_out = model.encoder(src.to(device), src_mask.to(device))
-        
         trg_indice = [tokenizer.bos_id()]
 
+        with torch.no_grad():
+            src = model.embedding(src.to(device))
+            enc_out = model.encoder(src.to(device), src_mask.to(device))
 
-        while True:
-            trg = torch.tensor(trg_indice, dtype=torch.long).unsqueeze(0)
-            trg_mask = create_trg_mask(trg)
+            while True:
+                trg = torch.tensor(trg_indice, dtype=torch.long).unsqueeze(0)
+                trg_mask = create_trg_mask(trg)
 
-            trg = model.embedding(trg.to(device))
+                trg = model.embedding(trg.to(device))
 
-            with torch.no_grad():
-                dec_out, _ = model.decoder(enc_out, trg, src_mask.to(device), trg_mask.to(device))
-                out = model.fc_out(dec_out)
+                with torch.no_grad():
+                    dec_out, _ = model.decoder(enc_out, trg, src_mask.to(device), trg_mask.to(device))
+                    out = model.fc_out(dec_out)
 
-            pred_token = out.argmax(2)[:, -1].item()
-            trg_indice.append(pred_token)
+                pred_token = out.argmax(2)[:, -1].item()
+                trg_indice.append(pred_token)
 
-            if pred_token == tokenizer.eos_id():
-                break
+                if pred_token == tokenizer.eos_id():
+                    break
         
         
         pred_seq = tokenizer.Decode(trg_indice)
