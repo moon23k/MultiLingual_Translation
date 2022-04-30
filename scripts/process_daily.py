@@ -14,15 +14,31 @@ def process(dataset):
 
     for dial in tqdm(dataset):
         seq = dial.split("__eou__")[:-1]
+        seq_len = len(seq)
+
+        if seq_len < 2:
+            continue
+
+        elif seq_len == 2:
+            src.append(seq[0])
+            trg.append(seq[1])
+            continue
+
+        #Incase of seq_len is even
+        elif seq_len % 2 == 0:
+            src.extend(seq[0::2])
+            trg.extend(seq[1::2])
+
+            src.extend(seq[1:-1:2])
+            trg.extend(seq[2::2])
         
-        if len(seq) % 2 == 1:
-            seq = seq[:-1]
-        
-        for idx, sent in enumerate(seq):
-            if idx % 2 == 0:
-                src.append(sent)
-            else:
-                trg.append(sent)
+        #Incase of seq_len is odds
+        elif seq_len % 2 == 1:
+            src.extend(seq[0:-1:2])
+            trg.extend(seq[1::2])
+            
+            src.extend(seq[1::2])
+            trg.extend(seq[2::2])   
 
 
     src_train, src_valid, src_test = src[:-6000], src[-6000:-3000], src[-3000:]

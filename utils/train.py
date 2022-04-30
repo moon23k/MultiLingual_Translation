@@ -61,15 +61,18 @@ def gen_train_epoch(model, dataloader, criterion, optimizer, device):
     model.train()
     epoch_loss = 0
 
-    for _, batch in enumerate(dataloader):
+    for i, batch in enumerate(dataloader):
         optimizer.zero_grad()
-        src, trg = batch[0].to(device), batch[1].to(device)    
+        src, trg = batch[0].to(device), batch[1].to(device) 
+
+        trg_input = trg[:, :-1]
+        trg_y = trg[:, 1:].contiguous().view(-1)   
         
-        pred = model(src, trg)
+        pred = model(src, trg_input)
             
         pred_dim = pred.shape[-1]
         pred = pred.contiguous().view(-1, pred_dim)
-        loss = criterion(pred.to(device), trg.contiguous().view(-1))
+        loss = criterion(pred.to(device), trg_y)
         
         loss.backward()
 
@@ -78,6 +81,9 @@ def gen_train_epoch(model, dataloader, criterion, optimizer, device):
         optimizer.step()
 
         epoch_loss += loss.item()
+
+        if (i + 1) % 10 == 0:
+            print(f"{i+1}th Batch Loss : {epoch_loss / (i+1)}")
 
     return epoch_loss / len(dataloader)
 
@@ -90,14 +96,17 @@ def gen_eval_epoch(model, dataloader, criterion, device):
 
     with torch.no_grad():
         for _, batch in enumerate(dataloader):
-            src, trg = batch[0].to(device), batch[1].to(device)        
+            src, trg = batch[0].to(device), batch[1].to(device)   
+    
+            trg_input = trg[:, :-1]
+            trg_y = trg[:, 1:].contiguous().view(-1)        
 
-            pred = model(src, trg)
+            pred = model(src, trg_input)
 
             pred_dim = pred.shape[-1]
             pred = pred.contiguous().view(-1, pred_dim)
 
-            loss = criterion(pred, trg.contiguous().view(-1))
+            loss = criterion(pred, trg_y)
 
             epoch_loss += loss.item()
 

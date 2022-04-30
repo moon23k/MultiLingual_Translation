@@ -7,6 +7,6 @@ n_layers: 3
 n_heads: 8
 dropout_ratio: 0.1
 pad_idx: 1
+bos_idx: 2
+eos_idx: 3
 max_len: 100
-bos_id: 2
-eos_id: 3

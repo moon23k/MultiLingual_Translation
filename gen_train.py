@@ -12,7 +12,7 @@ import sentencepiece as spm
 
 from utils.data import read_data, get_dataloader
 from model.module import Generator, create_trg_mask, create_src_mask
-from utils.train import gen_train_epoch, gen_eval_epoch, epoch_time, set_seed, init_xavier
+from utils.train import gen_train_epoch, gen_eval_epoch, epoch_time, set_seed, init_xavier, Config
 
 
 

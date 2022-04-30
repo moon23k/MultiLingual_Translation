@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from model.module import Discriminator
-from utils.train import dis_train_epoch, dis_eval_epoch, epoch_time, set_seed, init_xavier
+from utils.train import dis_train_epoch, dis_eval_epoch, epoch_time, set_seed, init_xavier, Config
 from utils.data import get_dataloader, generate_sample
 
 
