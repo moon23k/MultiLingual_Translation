@@ -67,8 +67,8 @@ def run(config):
                         'train_loss': train_loss,
                         'valid_loss': valid_loss}, chk_path)
 
-        print(f"\tEpoch: {epoch + 1} | Time: {epoch_mins}m {epoch_secs}s")
-        print(f'\t\tTrain Loss: {train_loss:.3f} | Valid Loss: {valid_loss:.3f}')
+        print(f" Epoch {epoch + 1} / {config.dis_epochs} | Spent Time: {epoch_mins}m {epoch_secs}s")
+        print(f'   Train Loss: {train_loss:.3f} | Valid Loss: {valid_loss:.3f}')
 
 
     train_mins, train_secs = epoch_time(record_time, time.time())

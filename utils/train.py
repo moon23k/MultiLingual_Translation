@@ -61,7 +61,7 @@ def gen_train_epoch(model, dataloader, criterion, optimizer, device):
     model.train()
     epoch_loss = 0
 
-    for i, batch in enumerate(dataloader):
+    for idx, batch in enumerate(dataloader):
         optimizer.zero_grad()
         src, trg = batch[0].to(device), batch[1].to(device) 
 
@@ -82,8 +82,6 @@ def gen_train_epoch(model, dataloader, criterion, optimizer, device):
 
         epoch_loss += loss.item()
 
-        if (i + 1) % 10 == 0:
-            print(f"{i+1}th Batch Loss : {epoch_loss / (i+1)}")
 
     return epoch_loss / len(dataloader)
 
@@ -134,7 +132,6 @@ def dis_train_epoch(model, dataloader, criterion, optimizer, device):
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
         optimizer.step()
-        
 
         epoch_loss += loss.item()
 

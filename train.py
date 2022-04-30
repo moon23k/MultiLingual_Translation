@@ -6,7 +6,7 @@ import argparse
 from collections import defaultdict
 from model.module import Generator, Discriminator, SegGAN
 from utils.train import train_epoch, eval_epoch, Config, set_seed, epoch_time
-from utils.data import get_dataloader, generate_sample
+from utils.data import get_dataloader
 
 
 
@@ -55,18 +55,18 @@ def run(config):
 		epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
 		print(f"Epoch: {epoch + 1}  Time: {epoch_mins}min {epoch_secs}sec")
-		print(f"Train Loss: {train_loss} Valid Loss : {valid_loss}")
+		print(f"Train Rewards: {train_loss} Valid Rewards : {valid_loss}")
 
 
         #save training records
         record['epoch'].append(epoch+1)
-        record['train_loss'].append(train_loss)
-        record['valid_loss'].append(valid_loss)
+        record['train_reward'].append(train_loss)
+        record['valid_reward'].append(valid_loss)
         record['lr'].append(optimizer.param_groups[0]['lr'])
-        #`record['rewards'].append() #record reward logs
 
 
         #save best model
+        """
         if valid_loss < config.best_valid_loss:
             config.best_valid_loss = valid_loss
             torch.save({'epoch': epoch + 1,
@@ -74,11 +74,11 @@ def run(config):
                         'optimizer': optimizer.state_dict(),
                         'train_loss': train_loss,
                         'valid_loss': valid_loss}, chk_path)
+        """
+        print(f" Epoch {epoch + 1} / {config.n_epochs} | Spent Time: {epoch_mins}m {epoch_secs}s")
+        print(f'   Train Rewards: {train_loss:.3f} | Valid Rewards: {valid_loss:.3f}')
 
-        print(f"\tEpoch: {epoch + 1} | Time: {epoch_mins}m {epoch_secs}s")
-        print(f'\t\tTrain Loss: {train_loss:.3f} | Valid Loss: {valid_loss:.3f}')
-
-
+"""
     train_mins, train_secs = epoch_time(record_time, time.time())
     record['train_time'].append(f"{train_mins}min {train_secs}sec")
 
@@ -95,7 +95,7 @@ def run(config):
     #save train_record to json file
     with open(record_path, 'w') as fp:
         json.dump(record, fp)
-
+"""
 
 
 if __name__ == '__main__':
