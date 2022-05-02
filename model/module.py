@@ -90,7 +90,7 @@ class Generator(nn.Module):
 
 
 
-    def sample(self, seq_batch):
+    def sample(self, seq_batch, max_tokens=100):
         if seq_batch.dim() < 2:
             seq_batch = seq_batch.unsqueeze(dim=0)
         
@@ -108,11 +108,12 @@ class Generator(nn.Module):
                 src_emb = self.embedding(src)
                 enc_out = self.encoder(src_emb, src_mask)
 
-                while True:
+                for _ in range(max_tokens):
                     trg = torch.tensor(trg_indice, dtype=torch.long).unsqueeze(0)
                     trg_mask = create_trg_mask(trg)
 
                     trg_emb = self.embedding(trg.to(self.device))
+                    
                     dec_out, _ = self.decoder(enc_out, trg_emb, src_mask.to(self.device), trg_mask.to(self.device))
                     out = self.fc_out(dec_out)
 

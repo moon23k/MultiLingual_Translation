@@ -82,6 +82,9 @@ def gen_train_epoch(model, dataloader, criterion, optimizer, device):
 
         epoch_loss += loss.item()
 
+        if (i + 1) % 100 == 0:
+            print(f'  Batch {i + 1} / {len(dataloader)}  Train_Loss: {loss}')
+
 
     return epoch_loss / len(dataloader)
 
@@ -107,6 +110,9 @@ def gen_eval_epoch(model, dataloader, criterion, device):
             loss = criterion(pred, trg_y)
 
             epoch_loss += loss.item()
+
+            if (i + 1) % 100 == 0:
+                print(f'  Batch {i + 1} / {len(dataloader)}  Eval_Loss: {loss}')
 
     return epoch_loss / len(dataloader)
 
@@ -135,6 +141,9 @@ def dis_train_epoch(model, dataloader, criterion, optimizer, device):
 
         epoch_loss += loss.item()
 
+        if (i + 1) % 100 == 0:
+            print(f'  Batch {i + 1} / {len(dataloader)}  Train_Loss: {loss}')
+
     return epoch_loss / len(dataloader)
 
 
@@ -146,7 +155,7 @@ def dis_eval_epoch(model, dataloader, criterion, device):
     batch_bleu = []
 
     with torch.no_grad():
-        for _, batch in enumerate(dataloader):    
+        for i, batch in enumerate(dataloader):    
             src, trg, label = batch[0].to(device), batch[1].to(device), batch[2].to(device)
             
             pred = model(src, trg)
@@ -155,6 +164,8 @@ def dis_eval_epoch(model, dataloader, criterion, device):
 
             epoch_loss += loss.item()
 
+            if (i + 1) % 100 == 0:
+                print(f'  Batch {i + 1} / {len(dataloader)}  Eval_Loss: {loss}')
     return epoch_loss / len(dataloader)
 
 
@@ -165,16 +176,17 @@ def train_epoch(generator, discriminator, dataloader, criterion, optimizer, devi
     discriminator.eval()
     epoch_loss = 0
 
-    for _, batch in enumerate(dataloader):
+    for i, batch in enumerate(dataloader):
         optimizer.zero_grad()
 
-        src, trg = batch[0].to(device), batch[1].to(device)
+        src = batch[0].to(device)
         label = torch.zeros(src.size(0), dtype=torch.float).to(device)
 
         sample = generator.sample(src)
         
         pred = discriminator(src, sample.to(device))
-        loss = -criterion(pred.to(device), label)
+        pred = 1 - pred
+        loss = criterion(pred.to(device), label)
 
         loss.backward()
 
@@ -183,6 +195,10 @@ def train_epoch(generator, discriminator, dataloader, criterion, optimizer, devi
         optimizer.step()
         
         epoch_loss += loss.item()
+
+        if (i + 1) % 100 == 0:
+            print(f'  Batch {i + 1} / {len(dataloader)}  Train_Loss: {loss}')
+
 
     return epoch_loss / len(dataloader)
 
@@ -195,15 +211,20 @@ def eval_epoch(generator, discriminator, dataloader, criterion, device):
     epoch_loss = 0
 
     with torch.no_grad():
-        for _, batch in enumerate(dataloader):    
-            src, trg = batch[0].to(device), batch[1].to(device)
+        for i, batch in enumerate(dataloader):    
+            src = batch[0].to(device)
             label = torch.zeros(src.size(0), dtype=torch.float).to(device)
             
             sample = generator.sample(src)
-            pred = discriminator(sample.to(device))
-
-            loss = -criterion(pred, trg.contiguous().view(-1))
+            
+            pred = discriminator(src, sample.to(device))
+            pred = 1 - pred
+            loss = criterion(pred.to(device), label)
 
             epoch_loss += loss.item()
+
+            if (i + 1) % 100 == 0:
+                print(f'  Batch {i + 1} / {len(dataloader)}  Eval_Loss: {loss}')
+
 
     return epoch_loss / len(dataloader)

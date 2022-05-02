@@ -5,6 +5,7 @@ import sentencepiece as spm
 
 
 
+
 def run(model, tokenizer, split, device, max_tokens=100):
 	orig_data = read_data(f'{split}.src')
 	data_seq, data_ids = [], []

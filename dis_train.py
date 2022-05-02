@@ -11,7 +11,7 @@ import torch.optim as optim
 
 from model.module import Discriminator
 from utils.train import dis_train_epoch, dis_eval_epoch, epoch_time, set_seed, init_xavier, Config
-from utils.data import get_dataloader, generate_sample
+from utils.data import get_dataloader
 
 
 
@@ -30,7 +30,7 @@ def run(config):
     #Set Discriminator Training Tools
     discriminator = Discriminator(config).to(config.device)
     discriminator.apply(init_xavier)
-    criterion = nn.BCELoss().to(config.device) #Loss의 경우 뭘로하는 게 좋을지 서칭 ㄱ
+    criterion = nn.BCELoss().to(config.device)
     optimizer = optim.Adam(discriminator.parameters(), lr=config.learning_rate)
 
 

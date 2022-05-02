@@ -4,7 +4,12 @@ import math
 import json
 import argparse
 from collections import defaultdict
-from model.module import Generator, Discriminator, SegGAN
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+from model.module import Generator, Discriminator
 from utils.train import train_epoch, eval_epoch, Config, set_seed, epoch_time
 from utils.data import get_dataloader
 
@@ -19,16 +24,11 @@ def run(config):
     
     record = defaultdict(list)
     record_path = os.path.join(chk_dir, 'seqGAN_record.json')
-	
-
-    #Define Tokenizer
-	tokenizer = spm.SentencePieceProcessor()
-	tokenizer.load('data/vocab/spm.model')
 
 
 	#Load DataLoaders for Training
-	train_dataloader = get_dataloader('train')
-	valid_dataloader = get_dataloader('valid')
+	train_dataloader = get_dataloader('gen', 'train', config.batch_size)
+	valid_dataloader = get_dataloader('gen', 'valid', config.batch_size)
 
 
 	#Load Pre-Trained Generator and Discriminator
@@ -36,7 +36,7 @@ def run(config):
 	generator.load_state_dict(torch.load('checkpoints/gen_states.pt', map_location=config.device)['model'])
 	
 	discriminator = Discriminator(config).to(config.device)
-	discriminator.load_state_dict(torch.load('checkpoints/gen_states.pt', map_location=config.device)['model'])
+	discriminator.load_state_dict(torch.load('checkpoints/dis_states.pt', map_location=config.device)['model'])
 
 	criterion = nn.BCELoss().to(config.device)
 	optimizer = optim.Adam(generator.parameters(), lr=config.learning_rate)
@@ -66,7 +66,7 @@ def run(config):
 
 
         #save best model
-        """
+
         if valid_loss < config.best_valid_loss:
             config.best_valid_loss = valid_loss
             torch.save({'epoch': epoch + 1,
@@ -74,11 +74,11 @@ def run(config):
                         'optimizer': optimizer.state_dict(),
                         'train_loss': train_loss,
                         'valid_loss': valid_loss}, chk_path)
-        """
+
         print(f" Epoch {epoch + 1} / {config.n_epochs} | Spent Time: {epoch_mins}m {epoch_secs}s")
         print(f'   Train Rewards: {train_loss:.3f} | Valid Rewards: {valid_loss:.3f}')
 
-"""
+
     train_mins, train_secs = epoch_time(record_time, time.time())
     record['train_time'].append(f"{train_mins}min {train_secs}sec")
 
@@ -95,7 +95,7 @@ def run(config):
     #save train_record to json file
     with open(record_path, 'w') as fp:
         json.dump(record, fp)
-"""
+
 
 
 if __name__ == '__main__':

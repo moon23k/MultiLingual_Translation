@@ -2,6 +2,7 @@
 mkdir -p data
 cd data
 
+
 #download and process datasets
 bash ../scripts/download_daily.sh
 python3 ../scripts/process_daily.py
