@@ -2,7 +2,6 @@ import os
 import time
 import math
 import json
-import argparse
 from collections import defaultdict
 
 import torch
@@ -44,7 +43,7 @@ def run(config):
 
 	#Adversarial Training
 	print('SeqGAN Trianing')
-
+    record_time = time.time()
 	for epoch in range(config.n_epochs):
 		start_time = time.time()
 		
@@ -54,19 +53,18 @@ def run(config):
 		end_time = time.time()
 		epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
-		print(f"Epoch: {epoch + 1}  Time: {epoch_mins}min {epoch_secs}sec")
-		print(f"Train Rewards: {train_loss} Valid Rewards : {valid_loss}")
+		print(f" Epoch: {epoch + 1} / {config.n_epochs}  Time: {epoch_mins}m {epoch_secs}s")
+		print(f" Train Loss: {train_loss:.3f} | Valid Loss: {valid_loss:.3f}")
 
 
         #save training records
         record['epoch'].append(epoch+1)
-        record['train_reward'].append(train_loss)
-        record['valid_reward'].append(valid_loss)
+        record['train_loss'].append(train_loss)
+        record['valid_loss'].append(valid_loss)
         record['lr'].append(optimizer.param_groups[0]['lr'])
 
 
         #save best model
-
         if valid_loss < config.best_valid_loss:
             config.best_valid_loss = valid_loss
             torch.save({'epoch': epoch + 1,
@@ -74,9 +72,6 @@ def run(config):
                         'optimizer': optimizer.state_dict(),
                         'train_loss': train_loss,
                         'valid_loss': valid_loss}, chk_path)
-
-        print(f" Epoch {epoch + 1} / {config.n_epochs} | Spent Time: {epoch_mins}m {epoch_secs}s")
-        print(f'   Train Rewards: {train_loss:.3f} | Valid Rewards: {valid_loss:.3f}')
 
 
     train_mins, train_secs = epoch_time(record_time, time.time())
@@ -101,4 +96,5 @@ def run(config):
 if __name__ == '__main__':
     set_seed()
     config = Config()
+    config.learning_rate = 1e-3
     run(config)
