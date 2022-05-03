@@ -37,7 +37,8 @@ def run(config):
 	discriminator = Discriminator(config).to(config.device)
 	discriminator.load_state_dict(torch.load('checkpoints/dis_states.pt', map_location=config.device)['model'])
 
-	criterion = nn.BCELoss().to(config.device)
+	dis_criterion = nn.BCELoss().to(config.device)
+    gen_criterion = nn.CrossEntropyLoss(ignore_index=config.pad_idx).to(config.device)
 	optimizer = optim.Adam(generator.parameters(), lr=config.learning_rate)
 
 
@@ -47,8 +48,8 @@ def run(config):
 	for epoch in range(config.n_epochs):
 		start_time = time.time()
 		
-		train_loss = train_epoch(generator, discriminator, train_dataloader, criterion, optimizer, config.device)
-		valid_loss = eval_epoch(generator, discriminator, valid_dataloader, criterion, config.device)
+		train_loss = train_epoch(generator, discriminator, train_dataloader, gen_criterion, dis_criterion, optimizer, config.device)
+		valid_loss = eval_epoch(generator, discriminator, valid_dataloader, gen_criterion, dis_criterion, config.device)
 
 		end_time = time.time()
 		epoch_mins, epoch_secs = epoch_time(start_time, end_time)

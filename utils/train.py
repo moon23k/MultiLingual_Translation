@@ -171,7 +171,7 @@ def dis_eval_epoch(model, dataloader, criterion, device):
 
 
 
-def train_epoch(generator, discriminator, dataloader, criterion, optimizer, device):
+def train_epoch(generator, discriminator, dataloader, gen_criterion, dis_criterion, optimizer, device):
     generator.train()
     discriminator.eval()
     epoch_loss = 0
@@ -179,19 +179,31 @@ def train_epoch(generator, discriminator, dataloader, criterion, optimizer, devi
     for i, batch in enumerate(dataloader):
         optimizer.zero_grad()
 
-        src = batch[0].to(device)
+        src, trg = batch[0].to(device), batch[1].to(device)
         label = torch.zeros(src.size(0), dtype=torch.float).to(device)
 
+        trg_input = trg[:, :-1]
+        trg_y = trg[:, 1:].contiguous().view(-1) 
+
+        
         sample = generator.sample(src)
         
-        pred = discriminator(src, sample.to(device))
-        pred = 1 - pred
-        loss = criterion(pred.to(device), label)
 
+        penalty = discriminator(src, sample.to(device))
+        penalty = 1 - penalty
+        penalty = dis_criterion(penalty.to(device), label)
+
+
+        pred = generator(src, trg_input)
+        pred_dim = pred.shape[-1]
+        pred = pred.contiguous().view(-1, pred_dim)
+        loss = gen_criterion(pred.to(config.device), trg_y)
+
+
+        loss += penalty
         loss.backward()
 
         nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
-
         optimizer.step()
         
         epoch_loss += loss.item()
@@ -205,23 +217,38 @@ def train_epoch(generator, discriminator, dataloader, criterion, optimizer, devi
 
 
 
-def eval_epoch(generator, discriminator, dataloader, criterion, device):
+def eval_epoch(generator, discriminator, dataloader, gen_criterion, dis_criterion, device):
     generator.eval()
     discriminator.eval()
     epoch_loss = 0
 
     with torch.no_grad():
         for i, batch in enumerate(dataloader):    
-            src = batch[0].to(device)
+
+            src, trg = batch[0].to(device), batch[1].to(device)
             label = torch.zeros(src.size(0), dtype=torch.float).to(device)
             
-            sample = generator.sample(src)
-            
-            pred = discriminator(src, sample.to(device))
-            pred = 1 - pred
-            loss = criterion(pred.to(device), label)
+            trg_input = trg[:, :-1]
+            trg_y = trg[:, 1:].contiguous().view(-1) 
 
+
+            sample = generator.sample(src)
+
+            
+            penalty = discriminator(src, sample.to(device))
+            penalty = 1 - penalty
+            penalty = dis_criterion(penalty.to(device), label)
+
+
+            pred = generator(src, trg_input)
+            pred_dim = pred.shape[-1]
+            pred = pred.contiguous().view(-1, pred_dim)
+            loss = gen_criterion(pred.to(config.device), trg_y)
+
+
+            loss += penalty
             epoch_loss += loss.item()
+
 
             if (i + 1) % 100 == 0:
                 print(f'  Batch {i + 1} / {len(dataloader)}  Eval_Loss: {loss}')
