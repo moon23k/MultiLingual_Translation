@@ -79,12 +79,17 @@ bash run -a train
 <br>
 
 ## Results
-Chat Logs with Pretrained Generator
+**Chat Logs with Pretrained Generator**
+
 ![image](https://user-images.githubusercontent.com/71929682/166625739-6c331847-1357-4d4e-9015-544a6d7e2afd.png)
 
-Chat Logs with Generator trained with seqGAN process
+<br>
+
+**Chat Logs with Generator trained with seqGAN process**
+
 ![image](https://user-images.githubusercontent.com/71929682/166625346-7130696e-b4a0-4e0d-9527-9f8a5341c7c5.png)
 
+<br>
 
 Results above show more attractive and interestin conversation happens with Pre-trained Generator model.
 
