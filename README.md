@@ -20,11 +20,13 @@ Although these two approaches look different, in fact the conclusion they are tr
 
 <br>
 
-## Model Architecture
+## Architecture
 
 Just like in GAN, seqGAN also consists of generator and discriminator.
 
-Only Difference between GAN and seqGAN lies in Adversarial Training Process.
+The main purpose 
+
+But seqGAN uses Policy Gradient for Adversarial Learning.
 
 
 ### Generator
@@ -48,14 +50,20 @@ Discriminator is also composed of Transformer with parameter sharings.
 
 ### seqGAN
 
+Generator's Object is to fool Discriminator.
+But setting loss function with BCE based on discriminator's output, makes learning process hard to optimize.
 
+In Adversarial Process, Loss function combines CrossEntropy and Discriminator's output.
+
+
+<br>
 
 
 ## How to Use
 
 Clone the repo in your env
 ```
-git clone https://github.com/moon23k/seqGAN
+git clone https://github.com/moon23k/seqGANso
 ```
 
 <br>
