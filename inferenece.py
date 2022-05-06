@@ -7,8 +7,6 @@ import argparse
 
 
 
-
-
 def run(model, tokenizer, device, max_tokens=100):
 	print('*** If you want to quit conversation, then type "quit". ***')
 	with torch.no_grad():
@@ -33,7 +31,7 @@ def run(model, tokenizer, device, max_tokens=100):
 	            trg_tensor = torch.tensor(trg_indice, dtype=torch.long).unsqueeze(0)
 	            trg_mask = create_trg_mask(trg_tensor)
 
-	            trg = model.embedding(trg)
+	            trg = model.embedding(trg_tensor)
 
                 dec_out, _ = model.decoder(enc_out, trg, src_mask, trg_mask)
                 out = model.fc_out(dec_out)

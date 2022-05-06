@@ -197,7 +197,7 @@ def train_epoch(generator, discriminator, dataloader, gen_criterion, dis_criteri
         pred = generator(src, trg_input)
         pred_dim = pred.shape[-1]
         pred = pred.contiguous().view(-1, pred_dim)
-        loss = gen_criterion(pred.to(config.device), trg_y)
+        loss = gen_criterion(pred.to(device), trg_y)
 
 
         loss += penalty
@@ -243,7 +243,7 @@ def eval_epoch(generator, discriminator, dataloader, gen_criterion, dis_criterio
             pred = generator(src, trg_input)
             pred_dim = pred.shape[-1]
             pred = pred.contiguous().view(-1, pred_dim)
-            loss = gen_criterion(pred.to(config.device), trg_y)
+            loss = gen_criterion(pred.to(device), trg_y)
 
 
             loss += penalty

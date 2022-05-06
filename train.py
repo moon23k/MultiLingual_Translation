@@ -54,8 +54,8 @@ def run(config):
 		end_time = time.time()
 		epoch_mins, epoch_secs = epoch_time(start_time, end_time)
 
-		print(f" Epoch: {epoch + 1} / {config.n_epochs}  Time: {epoch_mins}m {epoch_secs}s")
-		print(f" Train Loss: {train_loss:.3f} | Valid Loss: {valid_loss:.3f}")
+		print(f"\nEpoch: {epoch + 1} / {config.n_epochs}  Time: {epoch_mins}m {epoch_secs}s")
+		print(f"Train Loss: {train_loss:.3f} | Valid Loss: {valid_loss:.3f}")
 
 
         #save training records

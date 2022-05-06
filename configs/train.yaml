@@ -1,4 +1,4 @@
 n_epochs: 10
-gen_epochs: 30
-dis_epochs: 30
+gen_epochs: 10
+dis_epochs: 10
 batch_size: 128

@@ -71,12 +71,12 @@ class PositionwiseFFN(nn.Module):
 
 		self.fc_1 = nn.Linear(config.hidden_dim, config.pff_dim)
 		self.fc_2 = nn.Linear(config.pff_dim, config.hidden_dim)
-		self.dropout = nn.Dropout(config.dropout_ratio)
+		self.gelu = nn.GELU()
 
 
 	def forward(self, x):
 		out = self.fc_1(x)
-		out = self.dropout(F.leaky_relu(out))
+		out = self.gelu(out)
 		out = self.fc_2(out)
 
 		return out
@@ -86,15 +86,12 @@ class PositionwiseFFN(nn.Module):
 class ResidualConn(nn.Module):
 	def __init__(self, config):
 		super(ResidualConn, self).__init__()
-
 		self.layer_norm = nn.LayerNorm(config.hidden_dim)
-		self.dropout = nn.Dropout(config.dropout_ratio)
 
 
 	def forward(self, x, sub_layer):
 		out = x + sub_layer(x)
 		out = self.layer_norm(out)
-		out = self.dropout(out)
 		
 		return out
 
