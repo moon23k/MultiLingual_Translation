@@ -1,20 +1,7 @@
 # seqGAN
 
-<br>
 
-## Intro
-
-This repo covers implementation of seqGAN with my own edits.
-
-SeqGAN is an approach that applies GAN to NLP Task through Reinforcement Learning.
-
-Main idea borrowed from seqGAN, but the ways of configuring models and Loss functions are different.
-
-In the original paper, Policy Gradient was used by getting rewards from discriminator and Roll-outs.
-
-But In my case, I rather used output of discriminator as penalty than rewards.
-
-Although these two approaches look different, in fact the conclusion they are trying to draw is the same.
+This repo covers implementation of seqGAN with my own edits. SeqGAN arcitecture apply GAN to NLG Task via Reinforcement Learning Technique. Main idea borrowed from seqGAN, but the ways of configuring models and Loss functions are somewhat different. In the original paper, Policy Gradient was used by getting rewards from discriminator and Roll-outs. But In my case, I rather used output of discriminator as penalty than rewards. Though these two approaches look different, the main goal to draw is the same.
 
 
 
