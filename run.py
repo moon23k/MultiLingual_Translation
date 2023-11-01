@@ -37,13 +37,12 @@ class Config(object):
                 for key, val in params[group].items():
                     setattr(self, key, val)
 
-        self.task = args.task
         self.mode = args.mode
-        self.model_type = args.model
+        self.lang_pair = args.lang_pair
         self.search_method = args.search
 
-        self.ckpt = f"ckpt/{self.task}/translator.pt"
-        self.tokenizer_path = f'data/{self.task}/tokenizer.json'
+        self.ckpt = f"ckpt/{self.lang_pair}/model.pt"
+        self.tokenizer_path = f'data/{self.lang_pair}/tokenizer.json'
 
         use_cuda = torch.cuda.is_available()
         self.device_type = 'cuda' \
@@ -100,18 +99,18 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-task', required=True)
     parser.add_argument('-mode', required=True)
+    parser.add_argument('-lang_pair', required=True)
     parser.add_argument('-search', default='greedy', required=False)
     
     args = parser.parse_args()
-    assert args.task in ['multi', 'ende', 'enfr', 'enes']
     assert args.mode in ['train', 'test', 'inference']
+    assert args.lang_pair in ['multi', 'ende', 'enfr', 'enes']    
     assert args.search in ['greedy', 'beam']
 
     if args.mode == 'train':
-        os.makedirs(f"ckpt/{args.task}", exist_ok=True)
+        os.makedirs(f"ckpt/{args.lang_pair}", exist_ok=True)
     else:
-        assert os.path.exists(f'ckpt/{args.task}/translator.pt')
+        assert os.path.exists(f'ckpt/{args.lang_pair}/model.pt')
 
     main(args)
