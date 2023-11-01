@@ -1,100 +1,63 @@
-# seqGAN
+## Multi-Lingual Translaor
+&nbsp; In a typical Machine Translation task, models are primarily designed to learn and infer for a single language pair. However, when faced with the need to translate the same source language into various different target languages, training and operating separate models for each language pair can be inefficient. Therefore, in this repo, we aim to train Translation Models on diverse language pairs while simultaneously comparing their performance to models trained individually for each language pair. Our goal is to explore the capabilities of Multi-Linguality.
+
+<br><br> 
 
 
-This repo covers implementation of seqGAN with my own edits. SeqGAN arcitecture apply GAN to NLG Task via Reinforcement Learning Technique. Main idea borrowed from seqGAN, but the ways of configuring models and Loss functions are somewhat different. In the original paper, Policy Gradient was used by getting rewards from discriminator and Roll-outs. But In my case, I rather used output of discriminator as penalty than rewards. Though these two approaches look different, the main goal to draw is the same.
+## Experimental Setup
+
+**Data**
+> WMT14의 세 가지 언어쌍(En-De / En-Cs / En-Ru)을 사용합니다.
+모든 언어쌍 데이터의 숫자는 동일하게 설정해서 사용. 다만 Vocab size의 경우 Multi Lingual에서만 두배로 적용
+
+**Model**
+> Standard Transformer 모델을 사용합니다.
+다만 다양한 언어 쌍을 다루기 위한 Multi Lingual Model에는 사이즈가 상이한 두개의 모델을 실험군으로 사용합니다.
+
+**Training**
+> MLE Training Objective
 
 
+<br><br> 
 
-<br>
+## Results
 
-## Architecture
+| | En-De | En-Cs | En-Ru |
+|---|:---:|:---:|:---:|
+| En-De Model || - | - |
+| En-Cs Model | - |  | - |
+| En-Ru Model || - | - |
+| Multi Lingual Model | - | - | - |
+| Multi Lingual Large Model | - | - | - |
 
-Just like in GAN, seqGAN also consists of generator and discriminator.
-
-The main purpose 
-
-But seqGAN uses Policy Gradient for Adversarial Learning.
-
-
-### Generator
-
-Generator generates a series of sequence in a way the model trained through its training session.
-
-I chose Transformer Architecture with parameter sharings.
-
-<br>
-
-
-### Discriminator
-
-Discriminator determine the difference between real and generated data
-
-Discriminator is also composed of Transformer with parameter sharings. 
-
-
-
-<br>
-
-### seqGAN
-
-Generator's Object is to fool Discriminator.
-But setting loss function with BCE based on discriminator's output, makes learning process hard to optimize.
-
-In Adversarial Process, Loss function combines CrossEntropy and Discriminator's output.
-
-
-<br>
-
+<br><br> 
 
 ## How to Use
 
 Clone the repo in your env
 ```
-git clone https://github.com/moon23k/seqGANso
+git clone https://github.com/moon23k/NMT_MultiLingual
 ```
 
 <br>
 
-Download and Process with following command
+Setup Datasets and Tokenizer via "setup.py" 
 ```
-bash prepare_dataset.sh
+python3 setup.py
 ```
 
 <br>
 
-Train Generator, Generate Samples, Train Discriminator, Train
+Actual Process via run.py
 ```
-bash run -a pretrain -m generator
-bash run -a generate
-bash run -a pretrain -m discriminator
-bash run -a train
+python3 run.py -mode ['train', 'test', 'inference']
+               -langpair ['ende', 'encs', 'enru', 'multi']
+               -search ['greedy', 'beam'] (Optional)
 ```
 
-
-<br>
-
-## Results
-**Chat Logs with Pretrained Generator**
-
-![image](https://user-images.githubusercontent.com/71929682/166625739-6c331847-1357-4d4e-9015-544a6d7e2afd.png)
-
-<br>
-
-**Chat Logs with Generator trained with seqGAN process**
-
-![image](https://user-images.githubusercontent.com/71929682/166625346-7130696e-b4a0-4e0d-9527-9f8a5341c7c5.png)
-
-<br>
-
-Results above show more attractive and interestin conversation happens with Pre-trained Generator model.
-
-
+<br><br> 
 
 ## Reference
+* [**Attention Is All You Need**]()
 
-seqGAN
-Policy Gradient
-Transformer
-
-<br>
-<br>
+<br> 
