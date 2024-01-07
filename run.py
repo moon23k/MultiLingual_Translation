@@ -31,24 +31,62 @@ def set_seed(SEED=42):
 class Config(object):
     def __init__(self, args):    
 
+        self.task = args.task
+        self.mode = args.mode
+        self.model_type = args.model
+        self.search_method = args.search        
+        self.ckpt = f"ckpt/{self.task}/{self.model_type}_model.pt"
+        self.tokenizer_path = f'data/{self.task}/tokenizer.json'
+
+        self.load_config()
+        self.setup_device()
+        self.update_model_attrs()
+
+
+    def load_config(self):
         with open('config.yaml', 'r') as f:
             params = yaml.load(f, Loader=yaml.FullLoader)
             for group in params.keys():
                 for key, val in params[group].items():
                     setattr(self, key, val)
 
-        self.mode = args.mode
-        self.lang_pair = args.lang_pair
-        self.search_method = args.search
-
-        self.ckpt = f"ckpt/{self.lang_pair}/model.pt"
-        self.tokenizer_path = f'data/{self.lang_pair}/tokenizer.json'
-
+    def setup_device(self):
         use_cuda = torch.cuda.is_available()
-        self.device_type = 'cuda' \
-                           if use_cuda and self.mode != 'inference' \
-                           else 'cpu'
+        self.device_type = 'cuda' if use_cuda and self.mode != 'inference' else 'cpu'
         self.device = torch.device(self.device_type)
+
+
+    def update_model_attrs(self):
+        
+        attributes = {
+            'enc_n_layers': self.n_layers,
+            'dec_n_layers': self.n_layers,
+            'enc_n_heads': self.n_heads,
+            'dec_n_heads': self.n_heads,
+            'enc_hidden_dim': self.hidden_dim,
+            'dec_hidden_dim': self.hidden_dim,
+            'enc_pff_dim': self.pff_dim,
+            'dec_pff_dim': self.pff_dim
+        }
+
+        model_type_rules = {
+            'enc_wide': ['enc_hidden_dim', 'enc_pff_dim'],
+            'dec_wide': ['dec_hidden_dim', 'dec_pff_dim'],
+            'enc_deep': ['enc_n_layers'],
+            'dec_deep': ['dec_n_layers'],
+            'enc_diverse': ['enc_n_heads'],
+            'dec_diverse': ['dec_n_heads'],
+            'large': ['enc_hidden_dim', 'enc_pff_dim', 'dec_hidden_dim', 'dec_pff_dim',
+                    'enc_n_layers', 'dec_n_layers', 'enc_n_heads', 'dec_n_heads']
+        }
+
+        model_type = self.model_type
+        if model_type in model_type_rules.keys():
+            rules = model_type_rules[model_type]
+            for attr in rules:
+                attributes[attr] *= 2
+        for attr, value in attributes.items():
+            setattr(self, attr, value)
 
 
     def print_attr(self):
@@ -94,23 +132,27 @@ def main(args):
     elif config.mode == 'inference':
         generator = Generator(config, model, tokenizer)
         generator.inference()
+
     
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('-task', required=True)
     parser.add_argument('-mode', required=True)
-    parser.add_argument('-lang_pair', required=True)
+    parser.add_argument('-balance', required=True)
     parser.add_argument('-search', default='greedy', required=False)
     
     args = parser.parse_args()
+    assert args.task in ['multi-source', 'multi-targe', 'multi-lingual']
     assert args.mode in ['train', 'test', 'inference']
-    assert args.lang_pair in ['multi', 'ende', 'enfr', 'enes']    
+    assert args.balance in ['base', 'enc_deep', 'enc_wide', 'enc_diverse', 
+                            'dec_deep', 'dec_wide', 'dec_diverse', 'large']
     assert args.search in ['greedy', 'beam']
 
     if args.mode == 'train':
-        os.makedirs(f"ckpt/{args.lang_pair}", exist_ok=True)
+        os.makedirs(f"ckpt/{args.task}", exist_ok=True)
     else:
-        assert os.path.exists(f'ckpt/{args.lang_pair}/model.pt')
+        assert os.path.exists(f'ckpt/{args.task}/{args.balance}_model.pt')
 
     main(args)

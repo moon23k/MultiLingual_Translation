@@ -1,4 +1,4 @@
-import os, re, json, yaml
+import os, re, json, yaml, argparse
 from datasets import load_dataset
 from tokenizers.models import BPE
 from tokenizers import Tokenizer, normalizers
@@ -93,7 +93,7 @@ def save_data(lang_pair, data_obj):
 
 
 
-def main():
+def main(task):
     #Data Processing
     ende_data = load_dataset('wmt14', 'de-en', split='train')['translation']
     ende_data, ende_corpus = process_translation_data(ende_data, 'de')
@@ -131,4 +131,10 @@ def main():
 
 
 if __name__ == '__main__':   
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-task', required=True)
+
+    args = parser.parse_args()
+    assert args.task in ['multi-source', 'multi-targe', 'multi-lingual']
+
+    main(args.task)
