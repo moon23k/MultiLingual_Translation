@@ -4,22 +4,6 @@
 <br><br> 
 
 
-## Experimental Setup
-
-**Data**
-> WMT14의 세 가지 언어쌍(En-De / En-Cs / En-Ru)을 사용합니다.
-모든 언어쌍 데이터의 숫자는 동일하게 설정해서 사용. 다만 Vocab size의 경우 Multi Lingual에서만 두배로 적용
-
-**Model**
-> Standard Transformer 모델을 사용합니다.
-다만 다양한 언어 쌍을 다루기 위한 Multi Lingual Model에는 사이즈가 상이한 두개의 모델을 실험군으로 사용합니다.
-
-**Training**
-> MLE Training Objective
-
-
-<br><br> 
-
 ## Results
 
 | | En-De | En-Cs | En-Ru |
