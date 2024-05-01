@@ -8,20 +8,30 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 class Trainer:
-    def __init__(self, config, model, train_dataloader, valid_dataloader):
+    def __init__(
+        self, config, model, 
+        enko_train_dataloader, 
+        koen_train_dataloader, 
+        enko_valid_dataloader, 
+        koen_valid_dataloader
+    ):
+
         super(Trainer, self).__init__()
         
         self.model = model
-        self.clip = config.clip
+        self.enko_train_dataloader = enko_train_dataloader
+        self.koen_train_dataloader = koen_train_dataloader
+        self.enko_valid_dataloader = enko_valid_dataloader
+        self.koen_valid_dataloader = koen_valid_dataloader
+        
         self.device = config.device
         self.n_epochs = config.n_epochs
+        self.pad_id = config.pad_id
         self.vocab_size = config.vocab_size
 
+        self.clip = config.clip
         self.scaler = torch.cuda.amp.GradScaler()
         self.iters_to_accumulate = config.iters_to_accumulate        
-
-        self.train_dataloader = train_dataloader
-        self.valid_dataloader = valid_dataloader
 
         self.optimizer = AdamW(self.model.parameters(), lr=config.lr)
         self.scheduler = ReduceLROnPlateau(self.optimizer, patience=2)
@@ -100,16 +110,44 @@ class Trainer:
             json.dump(records, fp)
 
 
+    def pad_batch(self, batch, pad_len):
+        batch_size, seq_len = batch.size()
+        padded_batch = torch.full((batch_size, pad_len), self.pad_id, dtype=torch.long)
+        padded_batch[:, :seq_len] = batch
+        return padded_batch
+
+
+    def concat_batch(self, koen_batch, enko_batch):
+        x_len = max(koen_batch['x'].size(1), enko_batch['x'].size(1))
+        y_len = max(koen_batch['y'].size(1), enko_batch['y'].size(1))
+
+        koen_x_padded = self.pad_batch(koen_batch['x'], x_len)
+        enko_x_padded = self.pad_batch(enko_batch['x'], x_len)
+
+        koen_y_padded = self.pad_batch(koen_batch['y'], y_len)
+        enko_y_padded = self.pad_batch(enko_batch['y'], y_len)
+
+        x_batch = torch.cat((koen_x_padded, enko_x_padded), dim=0)
+        y_batch = torch.cat((koen_y_padded, enko_y_padded), dim=0)
+
+        concatenated_batch  = {
+            'x': x_batch,
+            'y': y_batch
+        }
+
+        return concatenated_batch
+
+
     def train_epoch(self):
         self.model.train()
         epoch_loss = 0
 
-        for idx, batch in enumerate(self.train_dataloader):
-            x = batch['x'].to(self.device)
-            y = batch['y'].to(self.device)
+        for idx, (koen_batch, enko_batch) in enumerate(zip(self.koen_train_dataloader, self.enko_train_dataloader)):
+            batch = self.concat_batch(koen_batch, enko_batch)
+            batch = {k: v.to(self.device) for k, v in batch.items()}
 
             with torch.autocast(device_type=self.device.type, dtype=torch.float16):
-                loss = self.model(x, y).loss
+                loss = self.model(**batch).loss
                 loss = loss / self.iters_to_accumulate
 
             #Backward Loss
@@ -139,11 +177,11 @@ class Trainer:
         epoch_loss = 0
         
         with torch.no_grad():
-            for batch in self.valid_dataloader:
-                x = batch['x'].to(self.device)
-                y = batch['y'].to(self.device)
+            for koen_batch, enko_batch in zip(self.koen_valid_dataloader, self.enko_valid_dataloader):
+                batch = self.concat_batch(koen_batch, enko_batch)
+                batch = {k: v.to(self.device) for k, v in batch.items()}
                 
-                loss = self.model(x, y).loss
+                loss = self.model(**batch).loss
                 epoch_loss += loss.item()
         
         epoch_loss = round(epoch_loss / len(self.valid_dataloader), 3)

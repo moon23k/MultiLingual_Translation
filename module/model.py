@@ -1,6 +1,6 @@
 import os, torch
 import torch.nn as nn
-from model import Transformer
+from model import StandardTransformer, EvolvedHybridTransformer
 
 
 
@@ -31,10 +31,12 @@ def print_model_desc(model):
 
 
 
-
 def load_model(config):
-    model = Transformer(config)
-
+    if config.model_type == 'standard':
+        model = StandardTransformer(config)
+    else:
+        model = EvolvedHybridTransformer(config)
+        
     init_weights(model)
     print("Initialized Model has Loaded")
 

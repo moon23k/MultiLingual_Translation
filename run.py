@@ -1,8 +1,6 @@
 import os, yaml, argparse, torch
-
 from tokenizers import Tokenizer
 from tokenizers.processors import TemplateProcessing
-
 from module import (
     load_dataloader,
     load_model,
@@ -31,12 +29,12 @@ def set_seed(SEED=42):
 class Config(object):
     def __init__(self, args):    
 
-        self.task = args.task
         self.mode = args.mode
         self.model_type = args.model
-        self.search_method = args.search        
-        self.ckpt = f"ckpt/{self.task}/{self.model_type}_model.pt"
-        self.tokenizer_path = f'data/{self.task}/tokenizer.json'
+        self.balance = args.balance
+        self.search_method = args.search
+        self.ckpt = f"ckpt/{self.model_type}_{self.balance}.pt"
+        self.tokenizer_path = f'data/tokenizer.json'
 
         self.load_config()
         self.setup_device()
@@ -119,16 +117,33 @@ def main(args):
 
 
     if config.mode == 'train':
-        train_dataloader = load_dataloader(config, tokenizer, 'train')
-        valid_dataloader = load_dataloader(config, tokenizer, 'valid')
-        trainer = Trainer(config, model, train_dataloader, valid_dataloader)
+        enko_train_dataloader = load_dataloader(config, tokenizer, 'train', 'enko')
+        koen_train_dataloader = load_dataloader(config, tokenizer, 'train', 'koen')
+
+        enko_valid_dataloader = load_dataloader(config, tokenizer, 'valid', 'enko')
+        koen_valid_dataloader = load_dataloader(config, tokenizer, 'valid', 'koen')
+
+        trainer = Trainer(
+            config, model, 
+            enko_train_dataloader, 
+            koen_train_dataloader, 
+            enko_valid_dataloader, 
+            koen_valid_dataloader
+        )
         trainer.train()
     
+
     elif config.mode == 'test':
-        test_dataloader = load_dataloader(config, tokenizer, 'test')
-        tester = Tester(config, model, tokenizer, test_dataloader)
+        enko_test_dataloader = load_dataloader(config, tokenizer, 'valid', 'enko')
+        koen_test_dataloader = load_dataloader(config, tokenizer, 'valid', 'koen')
+
+        tester = Tester(
+            config, model, tokenizer, 
+            enko_test_dataloader, koen_test_dataloader
+        )
         tester.test()
     
+
     elif config.mode == 'inference':
         generator = Generator(config, model, tokenizer)
         generator.inference()
@@ -138,21 +153,23 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-task', required=True)
     parser.add_argument('-mode', required=True)
+    parser.add_argument('-model', required=True)
     parser.add_argument('-balance', required=True)
     parser.add_argument('-search', default='greedy', required=False)
     
     args = parser.parse_args()
-    assert args.task in ['multi-source', 'multi-targe', 'multi-lingual']
     assert args.mode in ['train', 'test', 'inference']
+
+    assert args.model in ['standard', 'evolved_hybrid']    
     assert args.balance in ['base', 'enc_deep', 'enc_wide', 'enc_diverse', 
                             'dec_deep', 'dec_wide', 'dec_diverse', 'large']
     assert args.search in ['greedy', 'beam']
 
+
     if args.mode == 'train':
         os.makedirs(f"ckpt/{args.task}", exist_ok=True)
     else:
-        assert os.path.exists(f'ckpt/{args.task}/{args.balance}_model.pt')
+        assert os.path.exists(f'ckpt/{args.model}_{args.balance}_model.pt')
 
     main(args)

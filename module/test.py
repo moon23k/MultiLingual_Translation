@@ -2,13 +2,19 @@ import json, torch, evaluate
 
 
 
+
 class Tester:
-    def __init__(self, config, model, tokenizer, test_dataloader):
+    def __init__(
+        self, config, model, tokenizer, 
+        enko_test_dataloader, koen_test_dataloader
+    ):
+
         super(Tester, self).__init__()
         
         self.model = model
         self.tokenizer = tokenizer
-        self.dataloader = test_dataloader
+        self.enko_dataloader = enko_test_dataloader
+        self.koen_dataloader = koen_test_dataloader
         
         self.pad_id = config.pad_id
         self.bos_id = config.bos_id
