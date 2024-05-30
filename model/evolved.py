@@ -2,9 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 from torch.nn import functional as F
-from collections import namedtuple
-from .common import clones, Embeddings
-from .standard import StandardDecoder
+from .components import clones, Embeddings, Decoder, ModelBase
+
 
 
 
@@ -313,9 +312,9 @@ class EvolvedDecoder(nn.Module):
 
 
 
-class EvolvedHybridTransformer(nn.Module):
+class EvolvedTransformer(ModelBase):
     def __init__(self, config):
-        super(EvolvedHybridTransformer, self).__init__()
+        super(EvolvedTransformer, self).__init__()
         
         self.pad_id = config.pad_id
         self.device = config.device

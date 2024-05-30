@@ -30,10 +30,11 @@ class Config(object):
     def __init__(self, args):    
 
         self.mode = args.mode
-        self.model_type = args.model
+        self.model_type = args.arch
         self.balance = args.balance
+        self.mname = self.arch if self.balance is None else f"{self.arch}_{self.balance}"
         self.search_method = args.search
-        self.ckpt = f"ckpt/{self.model_type}_{self.balance}.pt"
+        self.ckpt = f"ckpt/{self.arch}_{self.balance}.pt"
         self.tokenizer_path = f'data/tokenizer.json'
 
         self.load_config()
@@ -154,22 +155,22 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-mode', required=True)
-    parser.add_argument('-model', required=True)
-    parser.add_argument('-balance', required=True)
+    parser.add_argument('-arch', required=True)
+    parser.add_argument('-balance', default=None, required=True)
     parser.add_argument('-search', default='greedy', required=False)
     
     args = parser.parse_args()
     assert args.mode in ['train', 'test', 'inference']
 
-    assert args.model in ['standard', 'evolved_hybrid']    
+    assert args.arch in ['standard', 'evolved', 'fusion']
     assert args.balance in ['base', 'enc_deep', 'enc_wide', 'enc_diverse', 
                             'dec_deep', 'dec_wide', 'dec_diverse', 'large']
+    
     assert args.search in ['greedy', 'beam']
 
 
-    if args.mode == 'train':
-        os.makedirs(f"ckpt/{args.task}", exist_ok=True)
-    else:
-        assert os.path.exists(f'ckpt/{args.model}_{args.balance}_model.pt')
+    if args.mode != 'train':
+        mname = args.arch if args.balance is None else f"{args.arch}_{args.balance}"
+        assert os.path.exists(f'ckpt/{mname}_model.pt')
 
     main(args)

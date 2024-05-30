@@ -1,13 +1,20 @@
 import os, torch
 import torch.nn as nn
-from model import StandardTransformer, EvolvedHybridTransformer
+from model import StandardTransformer, EvolvedTransformer, FusionTransformer
 
 
 
 def init_weights(model):
-    for p in model.parameters():
-        if p.dim() > 1:
-            nn.init.xavier_uniform_(p)
+    if isinstance(model, FusionTransformer):
+        for name, param in model.named_parameters():
+            if 'ple' not in name and 'weight' in name and 'norm' not in name:
+                nn.init.xavier_uniform_(param)
+
+    else:
+        for p in model.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+
 
 
 
@@ -32,13 +39,15 @@ def print_model_desc(model):
 
 
 def load_model(config):
-    if config.model_type == 'standard':
+    if config.arch == 'standard':
         model = StandardTransformer(config)
+    elif config.arch == 'evolved':
+        model = EvolvedTransformer(config)
     else:
-        model = EvolvedHybridTransformer(config)
+        model = FusionTransformer(config)
         
     init_weights(model)
-    print("Initialized Model has Loaded")
+    print(f"Initialized {config.mname} Model has Loaded")
 
     if config.mode != 'train':
         assert os.path.exists(config.ckpt)
